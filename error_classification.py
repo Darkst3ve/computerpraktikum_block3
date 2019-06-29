@@ -1,13 +1,14 @@
 import numpy as np
+import csv
 from file_functionD import functionD
 #functionD ist die Funktion die Marcus programmiert, das kann man gegebenenfalls noch umbenennnen
-#A sind die Daten bereits in Form einer numpy-Matrix
 def error_classification(A):  
     size= np.shape(A)   
     m=size[0] #Zeilenanzahl
+    d=size[1]-1 #Dimension der Daten
     C=[]
     for i in range(0,m): #für jede Zeile der Daten
-        if A[i,0]== functionD(A[i,1:3]): 
+        if A[i,0]== functionD(A[i,1:d+1]): 
             c= 0 
         else:
             c= 1 
