@@ -1,5 +1,4 @@
 import numpy as np
-import csv
 from file_functionD import functionD
 #functionD ist die Funktion die Marcus programmiert, das kann man gegebenenfalls noch umbenennnen
 def error_classification(A):  
