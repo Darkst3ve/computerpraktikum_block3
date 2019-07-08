@@ -8,7 +8,6 @@ def classify(nametest,nametrain, Kset, l):
     D_train= train[:,1:]
     n=len(train)
     großk = int(max(Kset))
-    print(großk)
     for i in range(l):
             train_i= train[(i*n)//l:((i+1)*n)//l,:]
             a_i= train[0:(i*n)//l,:]
@@ -18,8 +17,9 @@ def classify(nametest,nametrain, Kset, l):
             c_i= D_train[0:(i*n)//l,:]
             d_i= D_train[(i+1)*n//l:,:]
             D_train_strich_i = np.vstack((c_i,d_i))
-            for x in D_train_strich_i:
-                    index_x_i= nearest_points_naive_sup(x,D_train_strich_i,großk)
+            m_i= len(D_train_i)
+            for j in range(0,m_i):
+                    index_j_i= nearest_points_naive_sup(D_train_strich_i[j,:],D_train_strich_i,großk)
     list_ks = []
     for k in Kset:
         errorarray=[]
@@ -28,7 +28,7 @@ def classify(nametest,nametrain, Kset, l):
             C_i=[]
            
             for j in range(0,m_i):
-                if train[j,0] == np.sign(np.sum(train_strich_i[index_x_i[:int(k)],0])):
+                if train[j,0] == np.sign(np.sum(train_strich_i[index_j_i[:int(k)],0])):
                     c=0
                 else:
                     c=1
@@ -38,25 +38,4 @@ def classify(nametest,nametrain, Kset, l):
         middle_k= (1/l)*sum(errorarray)
         list_ks.append(middle_k)
     print(list_ks)
-    print(list_ks.index(min(list_ks)))
-    
-           
-         
-          
-            
-            
-            
-            
-            
-            
-            
-            
-            
-           
-    
-            
-            
-           
-       
-        
-   
+    print(list_ks.index(min(list_ks))
