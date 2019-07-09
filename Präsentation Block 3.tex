@@ -1,0 +1,69 @@
+\documentclass{beamer}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman,english,dutch,strings]{babel}
+\usepackage{latexsym} 
+\usepackage{amsfonts} 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+  \end{frame}
+}
+
+\title{Binäre Klassifikation mit Python}
+\author{Lennart Duvenbeck, Adrian Schoch, Markus Duong}
+\date{09.07.2019}
+
+\begin{document}
+\maketitle
+\begin{frame}{Inhaltsverzeichnis}
+  \tableofcontents
+\end{frame}
+
+\section{Aufgabenstellung und Verfahren}
+\begin{frame} %%Eine Folie
+\frametitle{Aufgabenstellung} %%Folientitel
+Mit Hilfe eines Datensatzes $D = ((y_{1},x_{1}),...,(y_{n},x_{n}))$, wobei $y_{i} \in \{-1,1\}$ und $x_{i} \in [-1,1]^{d}$ gilt, soll eine Funktion $f_{D}: [-1,1]^{d} \rightarrow \{-1,1\}$ gefunden werden, so dass für einen vorher nicht gesehenen Datensatz $D' = ((x_{1},y_{1}),...,(x_{n},y_{n}))$ die Fehlerklassifikationsrate 
+\[
+\mathcal{R}_{D'}(f_{D}) := \frac{1}{m} \sum_{i=1}^{m} \mathbbm{1}_{y_{i}' \neq f_{D}(x_{i}')}
+\]
+möglichst gering ist.
+\end{frame}
+
+\begin{frame} %%Eine Folie
+\frametitle{Verfahren} %%Folientitel
+\textbf{Schritt 1:} Zu einem gegebenen Parameter $k \in \mathbb{N}$, einem Datensatz $D$ und einem zu klassifizierenden Punkt $x \in [-1,1]^{d}$ werden zunächst die $k$-nächsten Nachbarn $x_{i_{1}},...,x_{i_{k}}$ von $x$ in $D$ identifiziert. \\
+\ \\
+\textbf{Schritt 2:} Berechne
+\[
+f_{D,k}(x) := \text{sign} \bigg( \sum_{j =1}^{k} y_{i_{j}}\bigg).
+\]
+Hierbei ist $\text{sign} \: 0 := 1$.
+\end{frame}
+
+\begin{frame} %%Eine Folie
+\frametitle{Verfahren} %%Folientitel
+\textbf{Schritt 3:}  Um das \glqq optimale\grqq{} $k$ zu bestimmen wird der Datensatz $D$ zufällig in $l$ gleichgroße Teildatensätze $D_{1},...,D_{l}$ zerlegt und eine endliche Menge $K$ möglicher Werte für $k$ betrachtet.\\
+\ \\
+\textbf{Schritt 4:} Für $k \in K$, $i = 1,...,l$ und $D_{\textbackslash i} := D_{1} \cup ... \cup D_{i-1} \cup D_{i+1} \cup...\cup D_{l}$ wird dann
+\[
+\mathcal{R}_{D_{i}}(f_{D_{\textbackslash i}, k})
+\]
+berechnet und anschließend der Mittelwert über $i = 1,...,l$ gebildet. Ist $k^{*}$ das $k$ in $K$ mit dem kleinsten Mittelwert, so ist der resultierende Klassifikator
+\[
+f_ {D} := \text{sign} \bigg( \sum_{i=1}^{l} f_{D_{\textbackslash i}, k^{*}}\bigg).
+\]
+\end{frame}
+\section{Implementierung}
+\section{Interessanter Zwischenergebnisse und ihre graphische Darstellung}
+\end{document}
