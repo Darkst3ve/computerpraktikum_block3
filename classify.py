@@ -6,7 +6,7 @@ import time
 
 def classify(name, KSET, l):
     tic = time.time()
-    k_max = int(max(KSET))
+    k_max = max(KSET)
     test = file_import(name + ".test.csv")  # Vollständiges Array; Enthält Klassifikation
     train = file_import(name + ".train.csv")  # dito
     n = train.shape[0]  # Anzahl Punkte
@@ -38,7 +38,7 @@ def classify(name, KSET, l):
         for i in range(l):
             C_i = np.zeros(block_size)
             for j in range(0, block_size):
-                if D_i_array[i, j, 0] == np.sign(np.sum(D_strich_i_array[i, index_array[i * block_size + j, :int(k)], 0])):
+                if D_i_array[i, j, 0] == np.sign(np.sum(D_strich_i_array[i, index_array[i * block_size + j, :k], 0])):
 #                if D_i_array[i, j, 0] == single_classification(index_array[i * block_size + j, :int(k)], D_strich_i_array[i, :, :]):
                     c = 0
                 else:
@@ -51,4 +51,23 @@ def classify(name, KSET, l):
     print("%.10f seconds" % (toc - tic))
     print(list_ks)
 #    print([np.abs(list_ks[i] - list_ks[i + 1]) for i in range(len(list_ks) - 1)])
-    print(list_ks.index(min(list_ks)))
+    k_stern = np.int(list_ks.index(min(list_ks)))
+    print(k_stern)
+    o = len(test)
+    test_classification = np.zeros(o)
+    test_index_array = np.zeros((l, o, k_stern), dtype = int)
+    tic = time.time()
+    for i in range(l):
+        for j in range(o):
+            test_index_array[i, j, :] = nearest_points_naive_sup(train[j, :], D_strich_i_array[i, :, :], k_stern)
+    toc = time.time()
+    print("%.10f seconds" % (toc - tic))
+    tic = time.time()
+    for j in range(o):
+        temp = 0
+        for i in range(l):
+            temp += np.sign(np.sum(D_strich_i_array[i, test_index_array[i, j, :]]))
+        test_classification[j] = np.sign(temp)
+    toc = time.time()
+    print("%.10f seconds" % (toc - tic))
+    print(test_classification)
