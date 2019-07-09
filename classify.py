@@ -2,6 +2,7 @@ import numpy as np
 from file_import import file_import
 from nearest_points import nearest_points_naive_sup
 import time
+import warnings
 
 
 def classify(name, KSET, l):
@@ -38,7 +39,10 @@ def classify(name, KSET, l):
         for i in range(l):
             C_i = np.zeros(block_size)
             for j in range(0, block_size):
-                if D_i_array[i, j, 0] == np.sign(np.sum(D_strich_i_array[i, index_array[i * block_size + j, :k], 0])):
+                temp = np.sign(np.sum(D_strich_i_array[i, index_array[i * block_size + j, :k], 0]))
+                if temp == 0:
+                    temp = 1
+                if D_i_array[i, j, 0] == temp:
 #                if D_i_array[i, j, 0] == single_classification(index_array[i * block_size + j, :int(k)], D_strich_i_array[i, :, :]):
                     c = 0
                 else:
@@ -67,7 +71,12 @@ def classify(name, KSET, l):
         temp = 0
         for i in range(l):
             temp += np.sign(np.sum(D_strich_i_array[i, test_index_array[i, j, :]]))
+            if np.sign(np.sum(D_strich_i_array[i, test_index_array[i, j, :]])) == 0:
+                temp += 1
         test_classification[j] = np.sign(temp)
+#        if test_classification[j] == 0:
+#            test_classification[j] = 1
+#            warnings.warn("sign returns 0")
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     print(test_classification)
