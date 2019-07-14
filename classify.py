@@ -80,3 +80,6 @@ def classify(name, KSET, l):
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     print(test_classification)
+    test[:,0]=test_classification
+    print(test)
+    return test
