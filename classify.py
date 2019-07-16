@@ -63,14 +63,16 @@ def classify(name, KSET, l):
     tic = time.time()
     for i in range(l):
         for j in range(o):
-            test_index_array[i, j, :] = nearest_points_naive_sup(train[j, :], D_strich_i_array[i, :, :], k_stern)
+            test_index_array[i, j, :] = nearest_points_naive_sup(test[j, :], D_strich_i_array[i, :, :], k_stern)
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     tic = time.time()
     for j in range(o):
         temp = 0
         for i in range(l):
-            temp += np.sign(np.sum(D_strich_i_array[i, test_index_array[i, j, :]]))
+            temp1 = D_strich_i_array[i, test_index_array[i, j, :], 0]
+            temp2 = np.sum(temp1)
+            temp += np.sign(temp2)
             if np.sign(np.sum(D_strich_i_array[i, test_index_array[i, j, :]])) == 0:
                 temp += 1
         test_classification[j] = np.sign(temp)

@@ -20,7 +20,6 @@ plt.scatter(test[test_index, 1], test[test_index, 2], s=1.5, c='b')
 plt.figure(2)
 nearest = nearest_points_naive_l1(test[test_index, :], train, k)
 rest = [i for i in range(len(train)) if i not in nearest]
-
 plt.scatter(train[nearest, 1], train[nearest, 2], s=0.6, c='r')
 plt.scatter(train[rest, 1], train[rest, 2], s=0.6, c='k')
 plt.scatter(test[test_index, 1], test[test_index, 2], s=1.5, c='b')
