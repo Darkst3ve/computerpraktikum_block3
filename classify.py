@@ -44,9 +44,19 @@ def classify(name, KSET, l):
             for k in range(len(KSET) - 1):
                 new_array[i, j, k + 1] += D_strich_i_array[i, index_array[i * block_size + j, k + 1], 0]
     temp1_array = np.sign(new_array)
-    temp2_array = np.sum(temp1_array, 1) / block_size
-    temp3_array = np.sum(temp2_array, 0) / l
-    print(temp3_array)
+    temp2_array = np.zeros((l, block_size, k_max))
+    for i in range(l):
+        for j in range(block_size):
+            for k in range(len(KSET)):
+                if temp1_array[i, j, k] == 0:
+                    temp1_array[i, j, k] = 1
+                if D_i_array[i, j, 0] == temp1_array[i, j, k]:
+                    temp2_array[i, j, k] = 0
+                else:
+                    temp2_array[i, j, k] = 1
+    temp3_array = np.sum(temp2_array, 1) / block_size
+    temp4_array = np.sum(temp3_array, 0) / l
+    print(temp4_array)
     
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
