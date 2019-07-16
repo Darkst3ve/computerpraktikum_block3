@@ -1,6 +1,7 @@
 import numpy as np
 from file_import import file_import
 from nearest_points import nearest_points_naive_sup
+from nearest_points import nearest_points_naive_l1
 import time
 import warnings
 
@@ -29,11 +30,28 @@ def classify(name, KSET, l):
     for i in range(l):
         # Bestimme die k_max nächsten Nachbarn
         for j in range(0, block_size):
-            index_array[block_size * i + j, :] = nearest_points_naive_sup(D_i_array[i, j, :], D_strich_i_array[i, :, :], k_max)  # sic
+            index_array[block_size * i + j, :] = nearest_points_naive_l1(D_i_array[i, j, :], D_strich_i_array[i, :, :], k_max)  # sic
     list_ks = []
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     tic = time.time()
+    
+    
+    new_array = np.zeros((l, block_size, k_max)) # Enthält Summen der Klassifikationen (ohne Signum) der n Punkte zu allen nächsten Nachbarn (bis k_max)
+    for i in range(l):
+        for j in range(block_size):
+            new_array[i, j, 0] = np.sum(D_strich_i_array[i, index_array[i * block_size + j, 0], 0])
+            for k in range(len(KSET) - 1):
+                new_array[i, j, k + 1] += D_strich_i_array[i, index_array[i * block_size + j, k + 1], 0]
+    temp1_array = np.sign(new_array)
+    temp2_array = np.sum(temp1_array, 1) / block_size
+    temp3_array = np.sum(temp2_array, 0) / l
+    print(temp3_array)
+    
+    toc = time.time()
+    print("%.10f seconds" % (toc - tic))
+    tic = time.time()
+    
     for k in KSET:
         errorarray = np.zeros(l)
         for i in range(l):
@@ -63,7 +81,7 @@ def classify(name, KSET, l):
     tic = time.time()
     for i in range(l):
         for j in range(o):
-            test_index_array[i, j, :] = nearest_points_naive_sup(test[j, :], D_strich_i_array[i, :, :], k_stern)
+            test_index_array[i, j, :] = nearest_points_naive_l1(test[j, :], D_strich_i_array[i, :, :], k_stern)
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     tic = time.time()
