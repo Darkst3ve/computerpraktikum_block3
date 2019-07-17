@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from classify import classify
 from file_import import file_import 
 import numpy as np
-set = classify("crosses-2d",  np.arange(1,200),  5)
+set = classify("bananas-1-2d",  np.arange(1,200),  5)
 #set=file_import("crosses-2d.test.csv")
 list_1=[i for i in range(len(set)) if set[i,0]==1]
 list_2=[i for i in range(len(set)) if set[i,0]==-1]

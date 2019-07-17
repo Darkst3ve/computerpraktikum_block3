@@ -26,7 +26,6 @@ def classify(name, KSET, l):
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     tic = time.time()
-    
     for i in range(l):
         # Bestimme die k_max nächsten Nachbarn
         for j in range(0, block_size):
@@ -35,14 +34,12 @@ def classify(name, KSET, l):
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     tic = time.time()
-    
-    
-    new_array = np.zeros((l, block_size, k_max)) # Enthält Summen der Klassifikationen (ohne Signum) der n Punkte zu allen nächsten Nachbarn (bis k_max)
+    new_array = np.zeros((l, block_size, k_max))  # Enthält Summen der Klassifikationen (ohne Signum) der n Punkte zu allen nächsten Nachbarn (bis k_max)
     for i in range(l):
         for j in range(block_size):
             new_array[i, j, 0] = np.sum(D_strich_i_array[i, index_array[i * block_size + j, 0], 0])
             for k in range(len(KSET) - 1):
-                new_array[i, j, k + 1] += D_strich_i_array[i, index_array[i * block_size + j, k + 1], 0]
+                new_array[i, j, k + 1] = new_array[i, j, k] + D_strich_i_array[i, index_array[i * block_size + j, k + 1], 0]
     temp1_array = np.sign(new_array)
     temp2_array = np.zeros((l, block_size, k_max))
     for i in range(l):
@@ -56,38 +53,14 @@ def classify(name, KSET, l):
                     temp2_array[i, j, k] = 1
     temp3_array = np.sum(temp2_array, 1) / block_size
     temp4_array = np.sum(temp3_array, 0) / l
-    print(temp4_array)
-    
+    print(temp4_array)  
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
-    tic = time.time()
-    
-    for k in KSET:
-        errorarray = np.zeros(l)
-        for i in range(l):
-            C_i = np.zeros(block_size)
-            for j in range(0, block_size):
-                temp = np.sign(np.sum(D_strich_i_array[i, index_array[i * block_size + j, :k], 0]))
-                if temp == 0:
-                    temp = 1
-                if D_i_array[i, j, 0] == temp:
-#                if D_i_array[i, j, 0] == single_classification(index_array[i * block_size + j, :int(k)], D_strich_i_array[i, :, :]):
-                    c = 0
-                else:
-                    c = 1
-                C_i[j] = c
-            errorarray[i] = sum(C_i) / block_size
-        middle_k = (1 / l) * sum(errorarray)
-        list_ks.append(middle_k)
-    toc = time.time()
-    print("%.10f seconds" % (toc - tic))
-    print(list_ks)
-#    print([np.abs(list_ks[i] - list_ks[i + 1]) for i in range(len(list_ks) - 1)])
-    k_stern = np.int(list_ks.index(min(list_ks)))
+    k_stern = np.argmin(temp4_array)
     print(k_stern)
     o = len(test)
     test_classification = np.zeros(o)
-    test_index_array = np.zeros((l, o, k_stern), dtype = int)
+    test_index_array = np.zeros((l, o, k_stern), dtype=int)
     tic = time.time()
     for i in range(l):
         for j in range(o):
@@ -110,6 +83,6 @@ def classify(name, KSET, l):
     toc = time.time()
     print("%.10f seconds" % (toc - tic))
     print(test_classification)
-    test[:,0]=test_classification
+    test[:, 0] = test_classification
     print(test)
     return test
