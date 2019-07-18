@@ -37,9 +37,10 @@ def classify(name, KSET, l):
     new_array = np.zeros((l, block_size, k_max))  # Enthält Summen der Klassifikationen (ohne Signum) der n Punkte zu allen nächsten Nachbarn (bis k_max)
     for i in range(l):
         for j in range(block_size):
-            new_array[i, j, 0] = np.sum(D_strich_i_array[i, index_array[i * block_size + j, 0], 0])
-            for k in range(len(KSET) - 1):
-                new_array[i, j, k + 1] = new_array[i, j, k] + D_strich_i_array[i, index_array[i * block_size + j, k + 1], 0]
+            new_array[i, j, :] = np.cumsum(D_strich_i_array[i, index_array[i * block_size + j, :], 0])
+#            new_array[i, j, 0] = np.sum(D_strich_i_array[i, index_array[i * block_size + j, 0], 0])
+#            for k in range(len(KSET) - 1):
+#                new_array[i, j, k + 1] = new_array[i, j, k] + D_strich_i_array[i, index_array[i * block_size + j, k + 1], 0]
     temp1_array = np.sign(new_array)
     temp2_array = np.zeros((l, block_size, k_max))
     for i in range(l):
