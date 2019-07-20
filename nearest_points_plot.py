@@ -4,6 +4,7 @@ from classify import classify
 from file_import import file_import
 from nearest_points import nearest_points_naive_l1
 from nearest_points import nearest_points_naive_sup
+from scipy.spatial import KDTree
 
 train = file_import("bananas-2-2d.train.csv")
 test = file_import("bananas-2-2d.test.csv")
@@ -23,8 +24,20 @@ rest = [i for i in range(len(train)) if i not in nearest]
 plt.scatter(train[nearest, 1], train[nearest, 2], s=0.6, c='r')
 plt.scatter(train[rest, 1], train[rest, 2], s=0.6, c='k')
 plt.scatter(test[test_index, 1], test[test_index, 2], s=1.5, c='b')
-plt.show()
 
-print(nearest)
-print(train[nearest, :])
-print(sum(train[nearest, 0]))
+plt.figure(3)
+kdt = KDTree(train[:, 1:])
+nearest = kdt.query(test[test_index, 1:], k=k, p=float("inf"))[1]
+rest = [i for i in range(len(train)) if i not in nearest]
+plt.scatter(train[nearest, 1], train[nearest, 2], s=0.6, c='r')
+plt.scatter(train[rest, 1], train[rest, 2], s=0.6, c='k')
+plt.scatter(test[test_index, 1], test[test_index, 2], s=1.5, c='b')
+
+plt.figure(4)
+kdt = KDTree(train[:, 1:])
+nearest = kdt.query(test[test_index, 1:], k=k, p=1)[1]
+rest = [i for i in range(len(train)) if i not in nearest]
+plt.scatter(train[nearest, 1], train[nearest, 2], s=0.6, c='r')
+plt.scatter(train[rest, 1], train[rest, 2], s=0.6, c='k')
+plt.scatter(test[test_index, 1], test[test_index, 2], s=1.5, c='b')
+plt.show()
