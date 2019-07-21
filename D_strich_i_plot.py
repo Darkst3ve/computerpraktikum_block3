@@ -29,4 +29,5 @@ for i in range(l):
     plt.scatter(D_strich_i_array[i, nearest, 1], D_strich_i_array[i, nearest, 2], s=0.6, c='r')
     plt.scatter(D_strich_i_array[i, rest, 1], D_strich_i_array[i, rest, 2], s=0.6, c='k')
     plt.scatter(test[test_index, 1], test[test_index, 2], s=1.5, c='b')
+    print(sum(D_strich_i_array[i, nearest, 0]))
 plt.show()
