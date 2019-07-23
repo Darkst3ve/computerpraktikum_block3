@@ -8,7 +8,9 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{beamerthemesplit}
+\usecolortheme{beaver}
 \usepackage{bbm}
+
 
 \AtBeginSection[]{
   \begin{frame}
@@ -30,6 +32,7 @@
 \begin{frame}{Inhaltsverzeichnis}
   \tableofcontents
 \end{frame}
+
 
 \section{Verfahren und Aufgabenstellung}
 
@@ -86,7 +89,7 @@ Und der Klassifikator ist:
 \subsection{Aufgabenstellung}
 \begin{frame}
 Ziel: classify-Funktion\\
-Input: name ,Kset , l \\
+Input: name, Kset, l \\
 Output: name.result.csv, Klassifikationsrate $\mathcal{R}_{D'}(f_{D})$ \\
 \vspace{20 mm}
 \center{\Huge{EFFIZIENT}}
@@ -95,115 +98,349 @@ Output: name.result.csv, Klassifikationsrate $\mathcal{R}_{D'}(f_{D})$ \\
 
 
 \section{Implementierung}
-\subsection{Punktsuche}
-\begin{frame}
-In der Aufgabenstellung: KEINE Normvorgabe\\
-Sei $ x \in \mathbb{R} ^n:$\\
-Möglichkeiten:
-\begin{description}
-\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= \sum_{i=1}^n x_i $
-\item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ \sum_{i=1}^n x_i ^2} $
-\item[3.] $L^{\infty}-Norm$:  $\Vert x\Vert _{\infty}= \max(x_1,....,x_n)$
-\end{description}
-2. Möglichkeit sehr schlecht, da viele Operationen.\\
-Noch 1. und 3. Möglichkeit zur Wahl
-\end{frame}
 
 
-\begin{frame}[fragile]
-Umsetzung der $L^1-Norm$:
-\begin{verbatim}
-def nearest_points_naive_l1(x, D, k):
-    n = D.shape[0]
-    D = D[:, 1:]
-    x = x[1:]
-    if k > n:
-        k = n  
-        warnings.warn("Anzahl
-        gesuchter nächster Punkte ist größer als
-        Anzahl verfügbarer Punkte")
-    E = np.sum(np.abs(x - D), 1)
-    I = np.argsort(E)
-    return I[:k]
-\end{verbatim}
-\end{frame}
 
 
-\begin{frame}[fragile]
-Umsetzung der $L^{\infty}-Norm$:
-\begin{verbatim}
-def nearest_points_naive_sup(x, D, k):
-    n = D.shape[0]
-    D = D[:, 1:]
-    x = x[1:]
-    if k > n:
-        k = n 
-        warnings.warn("Anzahl
-        gesuchter nächster Punkte ist größer als 
-        Anzahl verfügbarer Punkte")
-    E = np.max(np.abs(x - D), 1)
-    I = np.argsort(E)
-    return I[:k]
-\end{verbatim}
-\end{frame}
-
-\begin{frame}
-Laufzeitmessung durch Einteilung des Datensatzes in die Teildatensätze $D_i$ und  $D_{\textbackslash i}$ für i=1,...,5.\\
-Suche für jedes x aus $D_i$ die 200 nächsten Nachbarn aus $D_{\textbackslash i}$.\\
-1. Datensatz: "toy-2d.train.csv" (10499 2D-Punkte)\\
-2. Datensatz: "toy-4d.train.csv" (10499 10D-Punkte)\\
-3. Datensatz: "toy-10d.train.csv" (10499 10D-Punkte)
-\end{frame}
-
-
-\begin{frame}[fragile]
-1. Datensatz: "toy-2d.train.csv".\\
-\vspace{5mm}
-Mit $L^1-Norm$
-\begin{verbatim}
-6.8030703068 seconds
-\end{verbatim}
-Mit $L^{\infty}-Norm$
-\begin{verbatim}
-5.9372479916 seconds
-\end{verbatim}
-Bei anderen 2D-Datensätzen ähnliche Ergebnisse
-\end{frame}
-
-
-\begin{frame}[fragile]
-2. Datensatz: "toy-4d.train.csv".\\
-\vspace{5mm}
-Mit $L^1-Norm$
-\begin{verbatim}
-7.5119700432 seconds
-\end{verbatim}
-Mit $L^{\infty}-Norm$
-\begin{verbatim}
-8.3533186913 seconds
-\end{verbatim}
-Bei anderen 4D-Datensätzen ähnliche Ergebnisse
-\end{frame}
-
-\begin{frame}[fragile]
-3. Datensatz: "toy-10d.train.csv".\\
-\vspace{5mm}
-Mit $L^1-Norm$
-\begin{verbatim}
-8.1387059689 seconds
-\end{verbatim}
-Mit $L^{\infty}-Norm$
-\begin{verbatim}
-9.7477006912 seconds
-\end{verbatim}
-\end{frame}
 \subsection{erstes lauffähiges Programm}
 
-\subsection{effizienteres Programm}
+\begin{frame}[fragile]
+Importieren aller nötiger Funktionen
+\begin{verbatim}
+import numpy as np
+from file_import import file_import
+from nearest_points import nearest_points_naive_sup
+
+def classify(name, KSET, l):
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Importieren der Datensätze\\
+Feststellen der Dimension und Punktanzahl\\
+Anlegen leerer Arrays, die noch benötigt werden\\
+\begin{verbatim}
+k_max = max(KSET)
+test = file_import(name + ".test.csv")  
+train = file_import(name + ".train.csv")  
+n = train.shape[0]  
+m = train.shape[1] 
+index_array = np.zeros((n, k_max), dtype=int)  
+block_size = n // l  
+D_i_array = np.zeros((l, block_size, m))  
+D_strich_i_array = np.zeros((l, block_size * (l - 1), m))  
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Anlegen der Teildatensätze für i=1,...,l in 3D-Arrays
+\begin{verbatim}
+for i in range(l):
+        D_i_array[i] = 
+        train[i * block_size:(i + 1) * block_size, :]
+        lower_points = 
+        train[0:i * block_size, :]
+        upper_points = 
+        train[(i + 1) * block_size:l * block_size, :]
+        D_strich_i_array[i] =
+        np.vstack((lower_points, upper_points))
+\end{verbatim}
+Laufzeit für bananas-1-2d:
+\begin{verbatim}
+0.0000000000 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Bestimmen der nächsten Nachbarn
+\begin{verbatim}
+for i in range(l):
+        for j in range(0, block_size):
+            index_array[block_size * i + j, :] =
+            nearest_points_naive_sup(
+            D_i_array[i, j, :],
+            D_strich_i_array[i, :, :], 
+            k_max)
+\end{verbatim}
+Laufzeit für bananas-1-2d:
+\begin{verbatim}
+6.1040873528 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Grobe Struktur zum bestimmen des $k^*$
+\begin{verbatim}
+for k in KSET:
+        Code
+        for i in range(l):
+            Code
+            for j in range(0, block_size):
+                Code
+            Code
+        Code
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Anlegen der benötigten Arrays
+\begin{verbatim}
+for k in KSET:
+     errorarray = np.zeros(l)
+     for i in range(l):
+          C_i = np.zeros(block_size)
+          for j in range(0, block_size):
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Berechnen der Einzelklassifikationen für die einzelnen Punkte\\
+Hier i, k fest:
+\begin{verbatim}
+for j in range(0, block_size):
+           temp = np.sign(np.sum(D_strich_i_array
+           [i, index_array[i * block_size + j, :k], 0]))
+           if temp == 0:
+              temp = 1 #das sgn(0)=1 gelten soll
+           if D_i_array[i, j, 0] == temp:
+               c = 0
+           else:
+               c = 1
+           C_i[j] = c
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]
+Bestimmen des Mittelwertes der Fehlerklassifikationsrate für die einzelnen k\\
+Bestimmen des optimalen k
+\begin{verbatim}    	   errorarray[i] = sum(C_i) / block_size
+   middle_k = (1 / l) * sum(errorarray)
+   list_ks.append(middle_k)
+k_stern = np.int(list_ks.index(min(list_ks)))
+\end{verbatim}
+Laufzeit für bananas-1-2d:
+\begin{verbatim}
+13.5280859470 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Bestimmen der $k^*$-nächsten Nachbarn aller Punkte aus dem Testdatensatz
+\begin{verbatim}
+o = len(test)
+test_classification = np.zeros(o)
+test_index_array = np.zeros((l, o, k_stern), dtype = int)
+for i in range(l):
+     for j in range(o):
+          test_index_array[i, j, :] =
+          nearest_points_naive_sup(
+          test[j, :], D_strich_i_array[i, :, :], k_stern)
+\end{verbatim}
+Laufzeit für bananas-1-2d:
+\begin{verbatim}
+12.6847841740 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Bestimmen der $k^*$-nächsten Nachbarn aller Punkte aus dem Testdatensatz
+\begin{verbatim}
+for j in range(o):
+     temp = 0
+     for i in range(l):
+         temp1 = D_strich_i_array[
+         i, test_index_array[i, j, :], 0]
+         temp2 = np.sum(temp1)
+         temp += np.sign(temp2)
+         if np.sign(np.sum(
+              D_strich_i_array
+              [i, test_index_array[i, j, :]])) == 0:
+              temp += 1
+        test_classification[j] = np.sign(temp)
+    test[:,0]=test_classification
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Laufzeit für diesen Teil des Programms:
+\begin{verbatim}
+0.3436388969 seconds
+\end{verbatim}
+Die gesamte Laufzeit des Programms beträgt:
+\begin{verbatim}
+32.2712738514 seconds
+\end{verbatim}
+Hauptteil der Zeit:
+\begin{description}
+\item[1.] Suche der nächsten Nachbarn: ca. 18 Sekunden
+\item[2.] Bestimmen des optimalen k: ca. 13-14 Sekunden
+\end{description}
+\end{frame}
+
+
+\subsection{Erste Optimierung}
+
+\begin{frame}
+Optimierung der Punktsuche
+\end{frame}
+
+%\begin{frame}
+%In der Aufgabenstellung: KEINE Normvorgabe\\
+%Sei $ x \in \mathbb{R} ^n:$\\
+%Möglichkeiten:
+%\begin{description}
+%\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= %\sum_{i=1}^n x_i $
+%\item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ \sum_{i=1}^n x_i ^2} $
+%\item[3.] $L^{\infty}-Norm$:  $\Vert x\Vert _{\infty}= \max(x_1,....,x_n)$
+%\end{description}
+%2. Möglichkeit sehr schlecht, da viele Operationen.\\
+%Noch 1. und 3. Möglichkeit zur Wahl
+%\end{frame}
+
+
+%\begin{frame}[fragile]
+%Umsetzung der $L^1-Norm$:
+%\begin{verbatim}
+%def nearest_points_naive_l1(x, D, k):
+%    n = D.shape[0]
+%    D = D[:, 1:]
+%    x = x[1:]
+%    if k > n:
+%        k = n  
+%        warnings.warn("Anzahl
+%        gesuchter nächster Punkte ist größer als
+%        Anzahl verfügbarer Punkte")
+%    E = np.sum(np.abs(x - D), 1)
+%    I = np.argsort(E)
+%    return I[:k]
+%\end{verbatim}
+%\end{frame}
+
+
+%\begin{frame}[fragile]
+%Umsetzung der $L^{\infty}-Norm$:
+%\begin{verbatim}
+%def nearest_points_naive_sup(x, D, k):
+ %   n = D.shape[0]
+  %  D = D[:, 1:]
+  %  x = x[1:]
+  %  if k > n:
+  %      k = n 
+  %      warnings.warn("Anzahl
+  %      gesuchter nächster Punkte ist größer al%s 
+%        Anzahl verfügbarer Punkte")
+%    E = np.max(np.abs(x - D), 1)
+%    I = np.argsort(E)
+ %   return I[:k]
+%\end{verbatim}
+%\end{frame}
+
+%\begin{frame}
+%Laufzeitmessung durch Einteilung des %Datensatzes in die Teildatensätze $D_i$ und  $D_{\textbackslash i}$ für i=1,...,5.\\
+%Suche für jedes x aus $D_i$ die 200 nächsten Nachbarn aus $D_{\textbackslash i}$.\\
+%1. Datensatz: "toy-2d.train.csv" (10499 2D-Punkte)\\
+%2. Datensatz: "toy-4d.train.csv" (10499 4D-Punkte)\\
+%3. Datensatz: "toy-10d.train.csv" (10499 10D-Punkte)
+%\end{frame}
+
+
+%\begin{frame}[fragile]
+%1. Datensatz: "toy-2d.train.csv".\\
+%\vspace{5mm}
+%Mit $L^1-Norm$
+%\begin{verbatim}
+%6.8030703068 seconds
+%\end{verbatim}
+%Mit $L^{\infty}-Norm$
+%\begin{verbatim}
+%5.9372479916 seconds
+%\end{verbatim}
+%Bei anderen 2D-Datensätzen ähnliche Ergebnisse
+%\end{frame}
+
+
+%\begin{frame}[fragile]
+%2. Datensatz: "toy-4d.train.csv".\\
+%\vspace{5mm}
+%Mit $L^1-Norm$
+%\begin{verbatim}
+%7.5119700432 seconds
+%\end{verbatim}
+%Mit $L^{\infty}-Norm$
+%\begin{verbatim}
+%8.3533186913 seconds
+%\end{verbatim}
+%Bei anderen 4D-Datensätzen ähnliche Ergebnisse
+%\end{frame}
+
+%\begin{frame}[fragile]
+%3. Datensatz: "toy-10d.train.csv".\\
+%\vspace{5mm}
+%Mit $L^1-Norm$
+%\begin{verbatim}
+%8.1387059689 seconds
+%\end{verbatim}
+%Mit $L^{\infty}-Norm$
+%\begin{verbatim}
+%9.7477006912 seconds
+%\end{verbatim}
+%\end{frame}
 
 
 
-\section{Interessanter Zwischenergebnisse und ihre graphische Darstellung}
+\subsection{Zweite Optimierung}
+
+\begin{frame}[fragile]
+\begin{verbatim}
+for k in KSET:
+        Code
+        for i in range(l):
+            Code
+            for j in range(0, block_size):
+                Code
+            Code
+        Code
+\end{verbatim}
+Optimierung der vielen Schleifen durch Vektorisierung
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{verbatim}
+new_array = np.zeros((l, block_size, k_max))  
+   for i in range(l):
+      for j in range(block_size):
+          new_array[i, j, :] = np.cumsum(
+          D_strich_i_array[
+          i,index_array[i * block_size + j, :], 0])
+temp1_array = np.sign(new_array)
+temp2_array = np.zeros((l, block_size, k_max))
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\begin{verbatim}
+for i in range(l):
+     for j in range(block_size):
+         for k in range(len(KSET)):
+             if temp1_array[i, j, k] == 0:
+                 temp1_array[i, j, k] = 1
+             if D_i_array[i, j, 0] == temp1_array[i, j, k]:
+                 temp2_array[i, j, k] = 0
+             else:
+                 temp2_array[i, j, k] = 1
+temp3_array = np.sum(temp2_array, 1) / block_size
+temp4_array = np.sum(temp3_array, 0) / l
+k_stern = np.argmin(temp4_array)
+\end{verbatim}
+Laufzeit zuvor: 13-14 Sekunden\\
+Laufzeit danach: 2-3 Sekunden
+\end{frame}
+
+
+
+\section{graphische Darstellung}
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.7]{bananas-1-2d-train.pdf}
@@ -216,11 +453,33 @@ Mit $L^{\infty}-Norm$
 \label{bananas}
 \end{figure}
 
-
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.7]{bananas-1-2d-test-nacher.pdf}
 \label{bananas}
 \end{figure}
-\end{document}
 
+%Neuer Datensatz
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.7]{bananas-2-2d-train.pdf}
+\label{bananas}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.7]{bananas-2-2d-test-vorher.pdf}
+\label{bananas}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.7]{bananas-2-2d-test-nachher.pdf}
+\label{bananas}
+\end{figure}
+
+
+
+
+\end{document}
