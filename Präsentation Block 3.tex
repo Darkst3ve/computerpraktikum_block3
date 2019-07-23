@@ -25,7 +25,7 @@
 
 \title{Binäre Klassifikation mit Python}
 \author{Lennart Duvenbeck, Adrian Schoch, Markus Duong}
-\date{09.07.2019}
+\date{25.07.2019}
 
 \begin{document}
 \maketitle
@@ -68,7 +68,7 @@ D_{\textbackslash i} := D_{1} \cup ... \cup D_{i-1} \cup D_{i+1} \cup...\cup D_{
 \begin{frame}
 Betrachte nun jedes mögliche k:\\
 Berechne:
-\[ \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})= \frac{1}{m_j} \sum_{j=1}^{m_i} \mathbbm{1}_{y_{j}' \neq f_{D \textbackslash i ,k}(x_{j}')}
+\[ \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})= \frac{1}{m_i} \sum_{j=1}^{m_i} \mathbbm{1}_{y_{j}' \neq f_{D \textbackslash i ,k}(x_{j}')}
 \]
 Wobei $m_i$ die Anzahl der Punkte in $D_i$ ist und  
 \[f_{D \textbackslash i ,k}(x) = \text{sign} \bigg( \sum_{j =1}^{k} y_{i_{j}}\bigg)
@@ -79,7 +79,7 @@ $x_{i_1},....,x_{i_k}$ von x in $D \textbackslash i$
 
 \begin{frame}
 Nun erhält man $k^*$: 
-\[k^* = \min \limits_{k \in K} \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})
+\[k^* = argmin_{k \in K} \sum_{i=1}^l \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})
 \]
 Und der Klassifikator ist:
 \[f_ {D} := \text{sign} \bigg( \sum_{i=1}^{l} f_{D_{\textbackslash i}, k^{*}}\bigg)
@@ -90,7 +90,7 @@ Und der Klassifikator ist:
 \begin{frame}
 Ziel: classify-Funktion\\
 Input: name, Kset, l \\
-Output: name.result.csv, Klassifikationsrate $\mathcal{R}_{D'}(f_{D})$ \\
+Output: name.result.csv, Klassifikationsfehlerrate $\mathcal{R}_{D'}(f_{D})$ \\
 \vspace{20 mm}
 \center{\Huge{EFFIZIENT}}
 \end{frame}
@@ -147,7 +147,7 @@ for i in range(l):
 \end{verbatim}
 Laufzeit für bananas-1-2d:
 \begin{verbatim}
-0.0000000000 seconds
+0.0323243141 seconds
 \end{verbatim}
 \end{frame}
 
@@ -201,7 +201,7 @@ for j in range(0, block_size):
            temp = np.sign(np.sum(D_strich_i_array
            [i, index_array[i * block_size + j, :k], 0]))
            if temp == 0:
-              temp = 1 #das sgn(0)=1 gelten soll
+              temp = 1 #da sgn(0)=1 gelten soll
            if D_i_array[i, j, 0] == temp:
                c = 0
            else:
@@ -244,13 +244,13 @@ Laufzeit für bananas-1-2d:
 \end{frame}
 
 \begin{frame}[fragile]
-Bestimmen der $k^*$-nächsten Nachbarn aller Punkte aus dem Testdatensatz
+Bestimmen der Klassifikationen
 \begin{verbatim}
 for j in range(o):
      temp = 0
      for i in range(l):
          temp1 = D_strich_i_array[
-         i, test_index_array[i, j, :], 0]
+                 i, test_index_array[i, j, :], 0]
          temp2 = np.sum(temp1)
          temp += np.sign(temp2)
          if np.sign(np.sum(
@@ -258,7 +258,7 @@ for j in range(o):
               [i, test_index_array[i, j, :]])) == 0:
               temp += 1
         test_classification[j] = np.sign(temp)
-    test[:,0]=test_classification
+test[:,0]=test_classification
 \end{verbatim}
 \end{frame}
 
@@ -273,125 +273,180 @@ Die gesamte Laufzeit des Programms beträgt:
 \end{verbatim}
 Hauptteil der Zeit:
 \begin{description}
-\item[1.] Suche der nächsten Nachbarn: ca. 18 Sekunden
-\item[2.] Bestimmen des optimalen k: ca. 13-14 Sekunden
+\item[1.] Suche der nächsten Nachbarn: 18-19 Sekunden
+\item[2.] Bestimmen des optimalen k: 13-14 Sekunden
 \end{description}
 \end{frame}
 
 
 \subsection{Erste Optimierung}
 
-\begin{frame}
-Optimierung der Punktsuche
+\begin{frame}[fragile]
+Optimierung der Punktsuche:\\
+Theoretische Vorüberlegung:
+In der Aufgabenstellung: KEINE Normvorgabe\\
+Sei $ x \in \mathbb{R} ^n$:\\
+Möglichkeiten:
+\begin{description}
+\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= sum_{i=1}^n x_i $
+\item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ sum_{i=1}^n x_i ^2} $
+\item[3.] $L^{\infty}-Norm$:  $\Vert x\Vert {\infty}= \max(x_1,....,x_n)$
+\end{description}
+2. Möglichkeit sehr schlecht, da viele Operationen.\\
+Noch 1. und 3. Möglichkeit zur Wahl
 \end{frame}
 
-%\begin{frame}
-%In der Aufgabenstellung: KEINE Normvorgabe\\
-%Sei $ x \in \mathbb{R} ^n:$\\
-%Möglichkeiten:
-%\begin{description}
-%\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= %\sum_{i=1}^n x_i $
-%\item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ \sum_{i=1}^n x_i ^2} $
-%\item[3.] $L^{\infty}-Norm$:  $\Vert x\Vert _{\infty}= \max(x_1,....,x_n)$
-%\end{description}
-%2. Möglichkeit sehr schlecht, da viele Operationen.\\
-%Noch 1. und 3. Möglichkeit zur Wahl
-%\end{frame}
+
+\begin{frame}[fragile]
+Erste Implementierung der $L^1$-Norm:
+\begin{verbatim}
+def nearest_points_naive_l1(x, D, k):
+    n = D.shape[0]
+    D = D[:, 1:]
+    x = x[1:]
+    if k > n:
+        k = n  
+        warnings.warn("Anzahl
+        gesuchter nächster Punkte ist größer als
+        Anzahl verfügbarer Punkte")
+    E = np.sum(np.abs(x - D), 1)
+    I = np.argsort(E)
+    return I[:k]
+\end{verbatim}
+\end{frame}
 
 
-%\begin{frame}[fragile]
-%Umsetzung der $L^1-Norm$:
-%\begin{verbatim}
-%def nearest_points_naive_l1(x, D, k):
-%    n = D.shape[0]
-%    D = D[:, 1:]
-%    x = x[1:]
-%    if k > n:
-%        k = n  
-%        warnings.warn("Anzahl
-%        gesuchter nächster Punkte ist größer als
-%        Anzahl verfügbarer Punkte")
-%    E = np.sum(np.abs(x - D), 1)
-%    I = np.argsort(E)
-%    return I[:k]
-%\end{verbatim}
-%\end{frame}
+
+\begin{frame}[fragile]
+Erste Implementierung der $L^{\infty}-Norm$:
+\begin{verbatim}
+def nearest_points_naive_sup(x, D, k):
+   n = D.shape[0]
+   D = D[:, 1:]
+   x = x[1:]
+   if k > n:
+       k = n 
+       warnings.warn("Anzahl
+       gesuchter nächster Punkte ist größer als 
+        Anzahl verfügbarer Punkte")
+    E = np.max(np.abs(x - D), 1)
+    I = np.argsort(E)
+    return I[:k]
+\end{verbatim} 
+\end{frame}
+
+\begin{frame}[fragile]
+Optimierte Implementierung der $L^1$-Norm:
+\begin{verbatim}
+def nearest_points_opt_l1(x, D, k):
+    n = D.shape[0]
+    D = D[:, 1:]
+    x = x[1:]
+    if k > n:
+        k = n  
+        warnings.warn("Anzahl
+        gesuchter nächster Punkte ist größer als
+        Anzahl verfügbarer Punkte")
+    E = np.sum(np.abs(x - D), 1)
+    P = np.argpartition(E, k)[:k]
+    map = dict(zip(E[P], P))
+    I = np.sort(E[P])
+    return np.array([map[i] for i in I])
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Optimierte Implementierung der $L^{\infty}$-Norm:
+\begin{verbatim}
+def nearest_points_opt_sup(x, D, k):
+    n = D.shape[0]
+    D = D[:, 1:]
+    x = x[1:]
+    if k > n:
+        k = n 
+        warnings.warn("Anzahl 
+        gesuchter nächster Punkte ist größer als Anzahl verfügbarer Punkte")
+    E = np.max(np.abs(x - D), 1)
+    if k == 0:
+        return np.argmin(E)
+    P = np.argpartition(E, k)[:k]
+    map = dict(zip(E[P], P))
+    I = np.sort(E[P])
+    return np.array([map[i] for i in I])
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+Rechenaufwand der verwendeten Operationen:\\
+np.argsort: $O(n*log(n))$\\
+np.argpartition: $O(log(n))$\\
+Vergleich der präsentierten Methoden und eines KD-Baumes aus der scipy-Bibliothek.
+Wähle einen Datensatz aus und bestimme für jeden Punkt aus dem Datensatz die 200 nächsten Nachbarn.
+\end{frame}
+
+\begin{frame}[fragile]
+1. Datensatz: toy-2d.train.csv: 10499 2D-Punkte
+\begin{verbatim}
+l1-naiv : 8.6845529079 seconds
+lsup-naiv : 7.7315573692 seconds
+l1-opt : 4.3814079762 seconds
+lsup-opt : 3.4447133541 seconds
+l1-kdt : 11.5258677006 seconds
+lsup-kdt : 9.9952528477 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+2. Datensatz: toy-4d.train.csv: 10499 4D-Punkte
+\begin{verbatim}
+l1-naiv : 9.2204573154 seconds
+lsup-naiv : 9.9663882256 seconds
+l1-opt : 4.7280640602 seconds
+lsup-opt : 5.7798974514 seconds
+l1-kdt : 20.4842510223 seconds
+lsup-kdt : 15.4026172161 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+3. Datensatz: toy-10d.train.csv: 10499 10D-Punkte
+\begin{verbatim}
+l1-naiv : 11.3101446629 seconds
+lsup-naiv : 12.4345607758 seconds
+l1-opt : 6.1001124382 seconds
+lsup-opt : 7.9787714481 seconds
+l1-kdt : 45.2455954552 seconds
+lsup-kdt : 26.2906966209 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+4. Datensatz: ijcnn1.10000.train.csv: 6999 
+22D-Punkte
+\begin{verbatim}
+l1-naiv : 13.6359348297 seconds
+lsup-naiv : 11.8157382011 seconds
+l1-opt : 11.5597970486 seconds
+lsup-opt : 12.1790583134 seconds
+l1-kdt : 74.1918091774 seconds
+lsup-kdt : 34.1802322865 seconds
+\end{verbatim}
+\end{frame}
 
 
-%\begin{frame}[fragile]
-%Umsetzung der $L^{\infty}-Norm$:
-%\begin{verbatim}
-%def nearest_points_naive_sup(x, D, k):
- %   n = D.shape[0]
-  %  D = D[:, 1:]
-  %  x = x[1:]
-  %  if k > n:
-  %      k = n 
-  %      warnings.warn("Anzahl
-  %      gesuchter nächster Punkte ist größer al%s 
-%        Anzahl verfügbarer Punkte")
-%    E = np.max(np.abs(x - D), 1)
-%    I = np.argsort(E)
- %   return I[:k]
-%\end{verbatim}
-%\end{frame}
+\begin{frame}
+Die optimierten Varianten sind für beide Normen besser als die naive Methode und der KD-Baum.\\
+Bei höheren Dimensionen werden die Unterschiede zwischen der naiven Version und der optimierten Version kleiner.\\
 
-%\begin{frame}
-%Laufzeitmessung durch Einteilung des %Datensatzes in die Teildatensätze $D_i$ und  $D_{\textbackslash i}$ für i=1,...,5.\\
-%Suche für jedes x aus $D_i$ die 200 nächsten Nachbarn aus $D_{\textbackslash i}$.\\
-%1. Datensatz: "toy-2d.train.csv" (10499 2D-Punkte)\\
-%2. Datensatz: "toy-4d.train.csv" (10499 4D-Punkte)\\
-%3. Datensatz: "toy-10d.train.csv" (10499 10D-Punkte)
-%\end{frame}
-
-
-%\begin{frame}[fragile]
-%1. Datensatz: "toy-2d.train.csv".\\
-%\vspace{5mm}
-%Mit $L^1-Norm$
-%\begin{verbatim}
-%6.8030703068 seconds
-%\end{verbatim}
-%Mit $L^{\infty}-Norm$
-%\begin{verbatim}
-%5.9372479916 seconds
-%\end{verbatim}
-%Bei anderen 2D-Datensätzen ähnliche Ergebnisse
-%\end{frame}
-
-
-%\begin{frame}[fragile]
-%2. Datensatz: "toy-4d.train.csv".\\
-%\vspace{5mm}
-%Mit $L^1-Norm$
-%\begin{verbatim}
-%7.5119700432 seconds
-%\end{verbatim}
-%Mit $L^{\infty}-Norm$
-%\begin{verbatim}
-%8.3533186913 seconds
-%\end{verbatim}
-%Bei anderen 4D-Datensätzen ähnliche Ergebnisse
-%\end{frame}
-
-%\begin{frame}[fragile]
-%3. Datensatz: "toy-10d.train.csv".\\
-%\vspace{5mm}
-%Mit $L^1-Norm$
-%\begin{verbatim}
-%8.1387059689 seconds
-%\end{verbatim}
-%Mit $L^{\infty}-Norm$
-%\begin{verbatim}
-%9.7477006912 seconds
-%\end{verbatim}
-%\end{frame}
-
-
+Für den vorhin betrachteten Datensatz bananas-1-2d ergibt sich:
+Laufzeit zuvor: 18-19 Sekunden\\
+Laufzeit danach: 9-10 Sekunden
+\end{frame}
 
 \subsection{Zweite Optimierung}
 
 \begin{frame}[fragile]
+Stand des Programms vor der Optimierung
 \begin{verbatim}
 for k in KSET:
         Code
@@ -406,13 +461,14 @@ Optimierung der vielen Schleifen durch Vektorisierung
 \end{frame}
 
 \begin{frame}[fragile]
+Bestimmen der $f_{D \textbackslash _i,k} (x)$
 \begin{verbatim}
 new_array = np.zeros((l, block_size, k_max))  
-   for i in range(l):
-      for j in range(block_size):
-          new_array[i, j, :] = np.cumsum(
-          D_strich_i_array[
-          i,index_array[i * block_size + j, :], 0])
+for i in range(l):
+   for j in range(block_size):
+       new_array[i, j, :] = np.cumsum(
+       D_strich_i_array[
+       i,index_array[i * block_size + j, :], 0])
 temp1_array = np.sign(new_array)
 temp2_array = np.zeros((l, block_size, k_max))
 \end{verbatim}
@@ -420,6 +476,8 @@ temp2_array = np.zeros((l, block_size, k_max))
 
 
 \begin{frame}[fragile]
+Bestimmung der Fehlerklassifikationen für die verschiedenen k\\
+Bestimmung des $k^*$
 \begin{verbatim}
 for i in range(l):
      for j in range(block_size):
@@ -435,10 +493,22 @@ temp4_array = np.sum(temp3_array, 0) / l
 k_stern = np.argmin(temp4_array)
 \end{verbatim}
 Laufzeit zuvor: 13-14 Sekunden\\
-Laufzeit danach: 2-3 Sekunden
+Laufzeit danach: 1.5-2 Sekunden
 \end{frame}
 
-
+\subsection{Zusammenfassung der Optimierung}
+\begin{frame}[fragile]
+Laufzeit für das gesamte Programm vor der Optimierung:
+\begin{verbatim}
+32.2712738514 seconds
+\end{verbatim}
+Laufzeit für das gesamte Programm nach der Optimierung:
+\begin{verbatim}
+11.6222813129 seconds
+\end{verbatim}
+Für andere 2D-Datensätze ergaben sich ähnliche Verbesserungen\\
+Für höhere Dimensionen fallen die Verbesserungen etwas geringer aus
+\end{frame}
 
 \section{graphische Darstellung}
 \begin{figure}[h]
