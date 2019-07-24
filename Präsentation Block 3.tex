@@ -43,8 +43,9 @@ Gegeben:
 \item[1.] Trainings-Datensatz D
 \item[2.] Test-Datensatz $D^{'}$
 \item[3.] eine Menge möglicher k: K
+\item[4.] $l \in \mathbb{N}$ 
 \end{description}
-Gesucht: resultierender Klasiifikator: 
+Gesucht: resultierender Klassifikator: 
 \[
 f_ {D} := \text{sign} \bigg( \sum_{i=1}^{l} f_{D_{\textbackslash i}, k^{*}}\bigg)
 \]
@@ -67,10 +68,10 @@ D_{\textbackslash i} := D_{1} \cup ... \cup D_{i-1} \cup D_{i+1} \cup...\cup D_{
 
 \begin{frame}
 Betrachte nun jedes mögliche k:\\
-Berechne:
+Berechne Klassifikationsfehlerrraten:
 \[ \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})= \frac{1}{m_i} \sum_{j=1}^{m_i} \mathbbm{1}_{y_{j}' \neq f_{D \textbackslash i ,k}(x_{j}')}
 \]
-Wobei $m_i$ die Anzahl der Punkte in $D_i$ ist und  
+Wobei $m_i$ die Anzahl der Punkte in $D_i$ ist und $f_{D \textbackslash i ,k}(x)$ die Klassifikationsfunktion
 \[f_{D \textbackslash i ,k}(x) = \text{sign} \bigg( \sum_{j =1}^{k} y_{i_{j}}\bigg)
 \]
 Die $y_{i_j}$ sind dabei die Klassifikationen der k nächsten Nachbarn 
@@ -79,7 +80,7 @@ $x_{i_1},....,x_{i_k}$ von x in $D \textbackslash i$
 
 \begin{frame}
 Nun erhält man $k^*$: 
-\[k^* = argmin_{k \in K} \sum_{i=1}^l \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})
+\[k^* = argmin_{k \in K} \frac{1}{l} \sum_{i=1}^l \mathcal{R}_{D_i}(f_{D \textbackslash i ,k})
 \]
 Und der Klassifikator ist:
 \[f_ {D} := \text{sign} \bigg( \sum_{i=1}^{l} f_{D_{\textbackslash i}, k^{*}}\bigg)
@@ -102,14 +103,14 @@ Output: name.result.csv, Klassifikationsfehlerrate $\mathcal{R}_{D'}(f_{D})$ \\
 
 
 
-\subsection{erstes lauffähiges Programm}
+\subsection{Erstes lauffähiges Programm}
 
 \begin{frame}[fragile]
 Importieren aller nötiger Funktionen
 \begin{verbatim}
 import numpy as np
 from file_import import file_import
-from nearest_points import nearest_points_naive_sup
+from nearest_points import nearest_points_naive_l1
 
 def classify(name, KSET, l):
 \end{verbatim}
@@ -157,7 +158,7 @@ Bestimmen der nächsten Nachbarn
 for i in range(l):
         for j in range(0, block_size):
             index_array[block_size * i + j, :] =
-            nearest_points_naive_sup(
+            nearest_points_naive_l1(
             D_i_array[i, j, :],
             D_strich_i_array[i, :, :], 
             k_max)
@@ -194,7 +195,7 @@ for k in KSET:
 \end{frame}
 
 \begin{frame}[fragile]
-Berechnen der Einzelklassifikationen für die einzelnen Punkte\\
+Berechnen der Klassifikationsfunktion für die einzelnen Punkte\\
 Hier i, k fest:
 \begin{verbatim}
 for j in range(0, block_size):
@@ -234,7 +235,7 @@ test_index_array = np.zeros((l, o, k_stern), dtype = int)
 for i in range(l):
      for j in range(o):
           test_index_array[i, j, :] =
-          nearest_points_naive_sup(
+          nearest_points_naive_l1(
           test[j, :], D_strich_i_array[i, :, :], k_stern)
 \end{verbatim}
 Laufzeit für bananas-1-2d:
@@ -288,8 +289,8 @@ In der Aufgabenstellung: KEINE Normvorgabe\\
 Sei $ x \in \mathbb{R} ^n$:\\
 Möglichkeiten:
 \begin{description}
-\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= sum_{i=1}^n x_i $
-\item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ sum_{i=1}^n x_i ^2} $
+\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= \sum_{i=1}^n x_i $
+\item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ \sum_{i=1}^n x_i ^2} $
 \item[3.] $L^{\infty}-Norm$:  $\Vert x\Vert {\infty}= \max(x_1,....,x_n)$
 \end{description}
 2. Möglichkeit sehr schlecht, da viele Operationen.\\
@@ -437,7 +438,6 @@ lsup-kdt : 34.1802322865 seconds
 \begin{frame}
 Die optimierten Varianten sind für beide Normen besser als die naive Methode und der KD-Baum.\\
 Bei höheren Dimensionen werden die Unterschiede zwischen der naiven Version und der optimierten Version kleiner.\\
-
 Für den vorhin betrachteten Datensatz bananas-1-2d ergibt sich:
 Laufzeit zuvor: 18-19 Sekunden\\
 Laufzeit danach: 9-10 Sekunden
@@ -446,6 +446,7 @@ Laufzeit danach: 9-10 Sekunden
 \subsection{Zweite Optimierung}
 
 \begin{frame}[fragile]
+Nun: Optimierung der Berechnung des $k^*$\\
 Stand des Programms vor der Optimierung
 \begin{verbatim}
 for k in KSET:
@@ -461,7 +462,7 @@ Optimierung der vielen Schleifen durch Vektorisierung
 \end{frame}
 
 \begin{frame}[fragile]
-Bestimmen der $f_{D \textbackslash _i,k} (x)$
+Bestimmen der $f_{D \textbackslash _i,k^*} (x)$
 \begin{verbatim}
 new_array = np.zeros((l, block_size, k_max))  
 for i in range(l):
@@ -498,34 +499,82 @@ Laufzeit danach: 1.5-2 Sekunden
 
 \subsection{Zusammenfassung der Optimierung}
 \begin{frame}[fragile]
-Laufzeit für das gesamte Programm vor der Optimierung:
+Laufzeit für bananas-1-2d vor der Optimierung:
 \begin{verbatim}
 32.2712738514 seconds
 \end{verbatim}
-Laufzeit für das gesamte Programm nach der Optimierung:
+Laufzeit für bananas-1-2d nach der Optimierung:
 \begin{verbatim}
 11.6222813129 seconds
 \end{verbatim}
-Für andere 2D-Datensätze ergaben sich ähnliche Verbesserungen\\
-Für höhere Dimensionen fallen die Verbesserungen etwas geringer aus
 \end{frame}
 
-\section{graphische Darstellung}
+\begin{frame}[fragile]
+Laufzeit für toy-2d vor der Optimierung:
+\begin{verbatim}
+36.3387167454 seconds
+\end{verbatim}
+Laufzeit für toy-2d nach der Optimierung:
+\begin{verbatim}
+12.4756846428 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Laufzeit für toy-4d vor der Optimierung:
+\begin{verbatim}
+37.2763948441 seconds
+\end{verbatim}
+Laufzeit für toy-4d nach der Optimierung:
+\begin{verbatim}
+13.8579912186 seconds
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[fragile]
+Laufzeit für toy-10d vor der Optimierung:
+\begin{verbatim}
+40.4189629555 seconds
+\end{verbatim}
+Laufzeit für toy-10d nach der Optimierung:
+\begin{verbatim}
+17.4822709560 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Laufzeit für ijcnn1 vor der Optimierung:
+\begin{verbatim}
+24.9962060452 seconds
+\end{verbatim}
+Laufzeit für ijcnn1 nach der Optimierung:
+\begin{verbatim}
+11.8453524113 seconds
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+Insgesamt deutliche Optimierung der Laufzeit.\\
+Prozentual besten Verbesserungen bei kleineren Dimensionen
+\end{frame}
+
+\section{Grafische Darstellung}
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.7]{bananas-1-2d-train.pdf}
+\includegraphics[scale=0.7]{bananas-5-2d-train.pdf}
 \label{bananas}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.7]{bananas-1-2d-test-vorher.pdf}
+\includegraphics[scale=0.7]{bananas-5-2d-test.pdf}
 \label{bananas}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.7]{bananas-1-2d-test-nacher.pdf}
+\includegraphics[scale=0.7]{bananas-5-2d-result.pdf}
 \label{bananas}
 \end{figure}
 
@@ -533,19 +582,19 @@ Für höhere Dimensionen fallen die Verbesserungen etwas geringer aus
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.7]{bananas-2-2d-train.pdf}
+\includegraphics[scale=0.7]{toy-2d-train.pdf}
 \label{bananas}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.7]{bananas-2-2d-test-vorher.pdf}
+\includegraphics[scale=0.7]{toy-2d-test.pdf}
 \label{bananas}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.7]{bananas-2-2d-test-nachher.pdf}
+\includegraphics[scale=0.7]{toy-2d-result.pdf}
 \label{bananas}
 \end{figure}
 
