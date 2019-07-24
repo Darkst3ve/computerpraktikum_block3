@@ -170,7 +170,7 @@ Laufzeit für bananas-1-2d:
 \end{frame}
 
 \begin{frame}[fragile]
-Grobe Struktur zum bestimmen des $k^*$
+Grobe Struktur zum Bestimmen des $k^*$
 \begin{verbatim}
 for k in KSET:
         Code
@@ -289,7 +289,7 @@ In der Aufgabenstellung: KEINE Normvorgabe\\
 Sei $ x \in \mathbb{R} ^n$:\\
 Möglichkeiten:
 \begin{description}
-\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= \sum_{i=1}^n x_i $
+\item[1.] $L^1-Norm$: $\Vert x\Vert _{1}= \sum_{i=1}^n |x_i| $
 \item[2.] $L^2-Norm$:  $\Vert x\Vert _{2}=\sqrt{ \sum_{i=1}^n x_i ^2} $
 \item[3.] $L^{\infty}-Norm$:  $\Vert x\Vert {\infty}= \max(x_1,....,x_n)$
 \end{description}
@@ -462,7 +462,7 @@ Optimierung der vielen Schleifen durch Vektorisierung
 \end{frame}
 
 \begin{frame}[fragile]
-Bestimmen der $f_{D \textbackslash _i,k^*} (x)$
+Bestimmen der Klassifikatorfunktionen
 \begin{verbatim}
 new_array = np.zeros((l, block_size, k_max))  
 for i in range(l):
@@ -507,6 +507,7 @@ Laufzeit für bananas-1-2d nach der Optimierung:
 \begin{verbatim}
 11.6222813129 seconds
 \end{verbatim}
+Neue Laufzeit beträgt ca. 35\% der vorherigen Laufzeit
 \end{frame}
 
 \begin{frame}[fragile]
@@ -518,6 +519,7 @@ Laufzeit für toy-2d nach der Optimierung:
 \begin{verbatim}
 12.4756846428 seconds
 \end{verbatim}
+Neue Laufzeit beträgt ca. 33\% der vorherigen Laufzeit
 \end{frame}
 
 \begin{frame}[fragile]
@@ -529,6 +531,7 @@ Laufzeit für toy-4d nach der Optimierung:
 \begin{verbatim}
 13.8579912186 seconds
 \end{verbatim}
+Neue Laufzeit beträgt ca. 38\% der vorherigen Laufzeit
 \end{frame}
 
 
@@ -541,17 +544,19 @@ Laufzeit für toy-10d nach der Optimierung:
 \begin{verbatim}
 17.4822709560 seconds
 \end{verbatim}
+Neue Laufzeit beträgt ca. 43\% der vorherigen Laufzeit
 \end{frame}
 
 \begin{frame}[fragile]
-Laufzeit für ijcnn1 vor der Optimierung:
+Laufzeit für ijcnn1.10000 vor der Optimierung:
 \begin{verbatim}
 24.9962060452 seconds
 \end{verbatim}
-Laufzeit für ijcnn1 nach der Optimierung:
+Laufzeit für ijcnn1.10000 nach der Optimierung:
 \begin{verbatim}
 11.8453524113 seconds
 \end{verbatim}
+Neue Laufzeit beträgt ca. 47\% der vorherigen Laufzeit
 \end{frame}
 
 \begin{frame}
@@ -597,6 +602,13 @@ Prozentual besten Verbesserungen bei kleineren Dimensionen
 \includegraphics[scale=0.7]{toy-2d-result.pdf}
 \label{bananas}
 \end{figure}
+
+\begin{frame}
+\center{\Huge{Vielen Dank für Ihre}}
+\center{\Huge{Aufmerksamkeit}}
+\vspace{20mm}
+\center{\huge{Gibt es noch Fragen ?}}
+\end{frame}
 
 
 
